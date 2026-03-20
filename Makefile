@@ -1,13 +1,13 @@
-only_boot: boot.asm
-	nasm -f bin boot.asm -o boot.bin
-	qemu-system-i386 -drive format=raw,file=boot.bin
+BUILD = build
 
-os: boot.asm kernel.c linker.ld
-	nasm -f bin boot.asm -o boot.bin
-	gcc -ffreestanding -c kernel.c -o kernel.o
-	ld -T linker.ld kernel.o -o kernel.bin
-	cat boot.bin kernel.bin > os.bin
-	qemu-system-i386 -drive format=raw,file=os.bin
+os: boot.asm arch/entry.asm kernel.c linker.ld
+	mkdir -p $(BUILD)
+	nasm -f bin boot.asm -o $(BUILD)/boot.bin
+	nasm -f elf32 arch/entry.asm -o $(BUILD)/entry.o
+	gcc -ffreestanding -m32 -fno-pic -I include -c kernel.c -o $(BUILD)/kernel.o
+	ld -T linker.ld -m elf_i386 $(BUILD)/entry.o $(BUILD)/kernel.o -o $(BUILD)/kernel.bin
+	cat $(BUILD)/boot.bin $(BUILD)/kernel.bin > $(BUILD)/os.bin
+	qemu-system-i386 -drive format=raw,file=$(BUILD)/os.bin,if=floppy
 
-clear:
-	rm -f *.o *.bin *.elf app
+clean:
+	rm -rf $(BUILD)
