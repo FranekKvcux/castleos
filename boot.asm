@@ -9,37 +9,23 @@ _start:
     mov ss, ax
     mov sp, 0x7c00
 
-    ; Wypisz "BOOT" przez BIOS żeby wiedzieć że bootloader działa
-    mov ah, 0x0e
-    mov al, 'B'
-    int 0x10
-    mov al, 'O'
-    int 0x10
-    mov al, 'O'
-    int 0x10
-    mov al, 'T'
-    int 0x10
-
     ; Załaduj kernel pod 0x10000
     mov ax, 0x1000
     mov es, ax
     xor bx, bx
     mov ah, 0x02
-    mov al, 10      ; 10 sektorów (bezpiecznie poniżej limitu floppy)
-    mov ch, 0       ; cylinder 0
-    mov cl, 2       ; sektor 2 (zaraz po bootloaderze)
-    mov dh, 0       ; głowica 0
-    mov dl, 0x00    ; 0x00 = floppy
+    mov al, 10
+    mov ch, 0
+    mov cl, 2
+    mov dh, 0
+    mov dl, 0x00
     int 0x13
 
-    ; Sprawdź czy wczytało się OK (carry flag)
     jc disk_error
 
-    ; Wypisz "OK"
-    mov ah, 0x0e
-    mov al, 'O'
-    int 0x10
-    mov al, 'K'
+    ; Wyłącz kursor BIOS
+    mov ah, 0x01
+    mov ch, 0x3f
     int 0x10
 
     ; Załaduj GDT
